@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "create-toolset": {
+      "source": "epicgames/unreal-engine-skills-for-claude-code-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/create-toolset/SKILL.md",
+      "computedHash": "7c555bbd24d81ac588c61ef4988cd0127f27cc9cbaf3a8f25024e58675281e6e"
+    },
+    "ue5-mcp": {
+      "source": "ibrews/ue5-mcp",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "cbbb0904af3217e5220e0f741f64530517ecc7c58e87e390c821c95bb2543d80"
+    },
+    "unreal-blueprints": {
+      "source": "gamedev-skills/awesome-gamedev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/unreal/unreal-blueprints/SKILL.md",
+      "computedHash": "6cdd64372af210f93266da46894554414541619d05e5a5411f0745ea454e0d3d"
+    },
+    "unreal-mcp": {
+      "source": "epicgames/unreal-engine-skills-for-claude-code-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/unreal-mcp/SKILL.md",
+      "computedHash": "5b457ac5b261e49af5bec05eb2dc2099d0b97c81184fdda95ebdfaa9c091ca22"
+    },
+    "unreal-skill": {
+      "source": "epicgames/unreal-engine-skills-for-claude-code-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/unreal-skill/SKILL.md",
+      "computedHash": "bf49d05392fee755e0c94772ddf508cb56178d3672367054ccd7213ebb2736e2"
+    }
+  }
+}

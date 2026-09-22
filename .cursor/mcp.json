@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "unreal-mcp": {
+      "type": "http",
+      "url": "http://127.0.0.1:8000/mcp"
+    },
+    "unreal-mcpython": {
+      "command": "/Users/honoryukun/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/honoryukun/Documents/GitHub/StartOfTheJourney-5.8/Tools/genorca-unreal-mcp/mcp-server",
+        "run",
+        "src/unreal_mcp/main.py"
+      ]
+    },
+    "ziggy-unreal": {
+      "command": "/Users/honoryukun/.local/bin/node",
+      "args": [
+        "/Users/honoryukun/Documents/GitHub/StartOfTheJourney-5.8/Tools/ziggymar-unreal-mcp/mcp-server/dist/index.js"
+      ]
+    }
+  }
+}
