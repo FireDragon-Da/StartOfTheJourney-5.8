@@ -1,0 +1,15 @@
+{
+  "WorkspaceID": "dv.ws.3955a3a5-5134-49e7-915f-5d86163df04d",
+  "RepoID": "dv.repo.9c6e2d53-80ad-432a-9c85-35c1e8f38c65",
+  "Path": "D:\\StartOfTheJourney 5.8",
+  "AccountID": "Google_115686061665525146074",
+  "BranchID": "dv.branch.1",
+  "BranchName": "main",
+  "CommitID": "dv.commit.3",
+  "Paused": false,
+  "ShouldDownload": false,
+  "RepoName": "Benjamin_Unarchived_UE_unreal26",
+  "ReadOnly": false,
+  "DigestMethod": "sha1",
+  "OrganizationTier": "EDUCATION"
+}
