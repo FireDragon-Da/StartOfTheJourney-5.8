@@ -1,0 +1,203 @@
+{
+  "success": true,
+  "graph_name": "AnimGraph",
+  "node_count": 6,
+  "nodes": [
+    {
+      "node_name": "AnimGraphNode_Root_0",
+      "node_title": "Output Pose\nAnimGraph",
+      "node_class": "AnimGraphNode_Root",
+      "pos_x": -48,
+      "pos_y": -16,
+      "pins": [
+        {
+          "pin_name": "Result",
+          "friendly_name": "Result",
+          "direction": "Input",
+          "type": "struct",
+          "sub_type": "PoseLink",
+          "default_value": "(LinkID=-1,SourceLinkID=-1)",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_BlendListByBool_1",
+              "pin_name": "Pose"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node_name": "AnimGraphNode_BlendSpacePlayer_0",
+      "node_title": "BS_IdleWalkRun\nBlendspace Player",
+      "node_class": "AnimGraphNode_BlendSpacePlayer",
+      "pos_x": -352,
+      "pos_y": 48,
+      "pins": [
+        {
+          "pin_name": "X",
+          "friendly_name": "Speed",
+          "direction": "Input",
+          "type": "real",
+          "default_value": "0.000000",
+          "linked_to": [
+            {
+              "node_name": "K2Node_VariableGet_0",
+              "pin_name": "BackgroundSpeed"
+            }
+          ]
+        },
+        {
+          "pin_name": "Pose",
+          "direction": "Output",
+          "type": "struct",
+          "sub_type": "PoseLink",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_BlendListByBool_1",
+              "pin_name": "BlendPose_1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node_name": "K2Node_VariableGet_0",
+      "node_title": "Get BackgroundSpeed",
+      "node_class": "K2Node_VariableGet",
+      "pos_x": -576,
+      "pos_y": 96,
+      "pins": [
+        {
+          "pin_name": "BackgroundSpeed",
+          "direction": "Output",
+          "type": "real",
+          "default_value": "0.0",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_BlendSpacePlayer_0",
+              "pin_name": "X"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node_name": "AnimGraphNode_SequencePlayer_0",
+      "node_title": "AS_MyChara_Airborne\nSequence Player",
+      "node_class": "AnimGraphNode_SequencePlayer",
+      "pos_x": -400,
+      "pos_y": 0,
+      "pins": [
+        {
+          "pin_name": "Pose",
+          "direction": "Output",
+          "type": "struct",
+          "sub_type": "PoseLink",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_BlendListByBool_1",
+              "pin_name": "BlendPose_0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node_name": "AnimGraphNode_BlendListByBool_1",
+      "node_title": "Blend Poses by bool",
+      "node_class": "AnimGraphNode_BlendListByBool",
+      "pos_x": -100,
+      "pos_y": 150,
+      "pins": [
+        {
+          "pin_name": "BlendPose_0",
+          "friendly_name": "True Pose",
+          "direction": "Input",
+          "type": "struct",
+          "sub_type": "PoseLink",
+          "default_value": "(LinkID=-1,SourceLinkID=-1)",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_SequencePlayer_0",
+              "pin_name": "Pose"
+            }
+          ]
+        },
+        {
+          "pin_name": "BlendPose_1",
+          "friendly_name": "False Pose",
+          "direction": "Input",
+          "type": "struct",
+          "sub_type": "PoseLink",
+          "default_value": "(LinkID=-1,SourceLinkID=-1)",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_BlendSpacePlayer_0",
+              "pin_name": "Pose"
+            }
+          ]
+        },
+        {
+          "pin_name": "BlendTime_0",
+          "friendly_name": "True Blend Time",
+          "direction": "Input",
+          "type": "real",
+          "default_value": "0.100000"
+        },
+        {
+          "pin_name": "BlendTime_1",
+          "friendly_name": "False Blend Time",
+          "direction": "Input",
+          "type": "real",
+          "default_value": "0.100000"
+        },
+        {
+          "pin_name": "bActiveValue",
+          "friendly_name": "Active Value",
+          "direction": "Input",
+          "type": "bool",
+          "default_value": "False",
+          "linked_to": [
+            {
+              "node_name": "K2Node_VariableGet_1",
+              "pin_name": "IsInAir"
+            }
+          ]
+        },
+        {
+          "pin_name": "Pose",
+          "direction": "Output",
+          "type": "struct",
+          "sub_type": "PoseLink",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_Root_0",
+              "pin_name": "Result"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node_name": "K2Node_VariableGet_1",
+      "node_title": "Get IsInAir",
+      "node_class": "K2Node_VariableGet",
+      "pos_x": -400,
+      "pos_y": 400,
+      "pins": [
+        {
+          "pin_name": "IsInAir",
+          "direction": "Output",
+          "type": "bool",
+          "default_value": "false",
+          "linked_to": [
+            {
+              "node_name": "AnimGraphNode_BlendListByBool_1",
+              "pin_name": "bActiveValue"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

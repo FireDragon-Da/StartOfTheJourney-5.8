@@ -188,3 +188,15 @@ WritePermissions.*.temp
 *.swp
 .git/
 *.log
+
+# Third-party MCP servers checked out under Tools/
+Tools/**/node_modules/
+Tools/**/.venv/
+Tools/**/__pycache__/
+
+# Per-machine MCP config; copy .cursor/mcp.windows.json or .cursor/mcp.mac.json
+/.cursor/mcp.json
+
+# Generated Python bytecode (including plugin caches)
+**/__pycache__/
+*.py[cod]

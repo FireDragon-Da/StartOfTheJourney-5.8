@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "unreal-mcp": {
+      "type": "http",
+      "url": "http://127.0.0.1:8000/mcp"
+    },
+    "unreal-mcpython": {
+      "command": "C:/Users/honor/.local/bin/uv.exe",
+      "args": [
+        "--directory",
+        "D:/StartOfTheJourney 5.8/Tools/genorca-unreal-mcp/mcp-server",
+        "run",
+        "src/unreal_mcp/main.py"
+      ]
+    },
+    "ziggy-unreal": {
+      "command": "D:/node.exe",
+      "args": [
+        "D:/StartOfTheJourney 5.8/Tools/ziggymar-unreal-mcp/mcp-server/dist/index.js"
+      ]
+    }
+  }
+}

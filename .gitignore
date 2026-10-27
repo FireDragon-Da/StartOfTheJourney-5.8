@@ -72,3 +72,13 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Per-machine MCP config; copy .cursor/mcp.windows.json or .cursor/mcp.mac.json
+/.cursor/mcp.json
+
+# Local version-control metadata and generated Python/dependency caches
+.diversion/
+**/__pycache__/
+*.py[cod]
+Tools/**/node_modules/
+Tools/**/.venv/

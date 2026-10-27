@@ -1,0 +1,182 @@
+[
+  {
+    "id": "PhotoAfterDeath",
+    "label": "Photograph",
+    "site": "TRV_Float_NWRoof_11",
+    "title": "Photograph / 20:46",
+    "lines": [
+      "The print shows your face beneath the station clock. Someone has written 20:46 on the back: four minutes after the death notice.",
+      "But the clock inside the photograph still reads 20:42. The negative envelope is dated tomorrow.",
+      "One image contradicts the registry, the clock, and its own date. Is that proof of you, or proof that this town edits its witnesses?"
+    ],
+    "prompt": "What will you let this photograph establish?",
+    "a": "The registry erased me. The image is my witness.",
+    "b": "Keep the contradiction. Neither source gets the last word.",
+    "opA": "Image over registry",
+    "opB": "Contradiction retained",
+    "resA": "You accept the image as a witness, while keeping its impossible date attached. Trust is a decision, not a repair to the evidence.",
+    "resB": "You preserve both incompatible times. You have found a reason to question the record, not a new authority to obey."
+  },
+  {
+    "id": "WitnessRecording",
+    "label": "Radio",
+    "site": "TRV_Float_AlleyFront_09",
+    "title": "Radio / An unfinished warning",
+    "lines": [
+      "A voice on the radio says: 'At 20:43 I saw you leave the square. I would know that coat anywhere.'",
+      "The sentence repeats. This time it ends: 'They gave me the coat before they gave me your name.'",
+      "Then a voice very like yours whispers: 'If you hear this, don't let a witness become another record you cannot question.'"
+    ],
+    "prompt": "What does being remembered prove?",
+    "a": "A borrowed memory can still witness a living person.",
+    "b": "A witness who learned my name may only remember a script.",
+    "opA": "Testimony can matter",
+    "opB": "Testimony may be scripted",
+    "resA": "You keep the testimony without calling it certain. Someone else's memory can reach you even if you cannot verify its source.",
+    "resB": "You record the voice and its rehearsed correction. Doubting a witness is different from deciding there was nobody to witness."
+  },
+  {
+    "id": "StoppedWatch",
+    "label": "Stopped watch",
+    "site": "TRV_Float_SouthRoofs_12",
+    "title": "Stopped watch / 20:42",
+    "lines": [
+      "A watch is stopped at 20:42, the time printed on the death notice. The inside of its strap carries your initials.",
+      "It is warm. When you put it down, the second hand moves once, against the direction of the clock.",
+      "The watch agrees with the record. Your hand supplies the one thing the record cannot explain."
+    ],
+    "prompt": "Which part of the watch belongs in your argument?",
+    "a": "Agreement between two records deserves weight.",
+    "b": "The warmth matters more than the matching time.",
+    "opA": "Corroboration has weight",
+    "opB": "Present sensation matters",
+    "resA": "You preserve the matching time, including the strange second that followed. Agreement is evidence; it is not immunity from doubt.",
+    "resB": "You record what happened in your hand. The feeling could be false, but the record cannot replace the experience of having it."
+  },
+  {
+    "id": "CarbonRegister",
+    "label": "Carbon copy",
+    "site": "TRV_Float_Alley_10",
+    "title": "Registry / The copy underneath",
+    "lines": [
+      "The upper page says: 'DECEASED. Entry finalized at 20:42.' The carbon copy beneath it says: 'ARRIVAL PENDING.'",
+      "Both pages carry the same stamp and signature. No one crossed out either version.",
+      "The office has not made one mistake. It has kept two official versions of you."
+    ],
+    "prompt": "What does an institution's contradiction allow you to claim?",
+    "a": "At least one official account must be wrong.",
+    "b": "The accounts may describe different versions of me.",
+    "opA": "Authority can be wrong",
+    "opB": "More than one version",
+    "resA": "You keep the duplicate stamp as evidence against certainty. Finding an error does not tell you which page deserves your trust.",
+    "resB": "You leave room for incompatible versions. That possibility explains the paperwork, but it still cannot choose which life you will live."
+  },
+  {
+    "id": "UnsentLetter",
+    "label": "Unsent letter",
+    "site": "TRV_EvidenceSpot_05",
+    "title": "Unsent letter / In your handwriting",
+    "lines": [
+      "'I remember this street before the balconies were here. I remember writing the notice too.' The handwriting looks like yours.",
+      "The next sentence is unfinished: 'If I made the record, did I make the person it describes, or only the person who believed it?'",
+      "There is no signature. Someone has pressed the pen hard enough to mark the blank page underneath."
+    ],
+    "prompt": "Is recognition enough to make this memory yours?",
+    "a": "I recognize the hand. I will answer for what it wrote.",
+    "b": "Recognition can be planted. I will keep the question open.",
+    "opA": "Accept responsibility",
+    "opB": "Memory remains uncertain",
+    "resA": "You accept responsibility without claiming perfect memory. The unfinished question becomes something you can answer through what you do next.",
+    "resB": "You keep the letter without turning familiarity into ownership. An uncertain memory can still be worth carrying."
+  },
+  {
+    "id": "EmptySeat",
+    "label": "Reserved seat",
+    "site": "TRV_EvidenceSpot_06",
+    "title": "Reserved seat / Still waiting",
+    "lines": [
+      "A reservation card says your seat will be held until 20:50. The station timetable says the last train left at 20:40.",
+      "Under the card, the wood has been worn smooth in the shape of a hand. Someone has waited here often.",
+      "A place can be kept for a person who will never come. Can it also keep a person from disappearing?"
+    ],
+    "prompt": "Does a place waiting for you count as a trace of you?",
+    "a": "Being expected is a kind of belonging.",
+    "b": "An empty place proves an expectation, not a person.",
+    "opA": "Expectation as belonging",
+    "opB": "Absence is not identity",
+    "resA": "You record the seat as a relation, not a certificate. It tells you that someone made room, even if you do not know for whom.",
+    "resB": "You keep the reservation and its limit. The town can prepare a place without deciding who must occupy it."
+  },
+  {
+    "id": "ChangedStreet",
+    "label": "Street plaque",
+    "site": "TRV_EvidenceSpot_07",
+    "title": "Street plaque / A name underneath",
+    "lines": [
+      "The sign reads 'RETURN STREET'. Under fresh paint, older letters spell 'DEPARTURE STREET'.",
+      "A small brass plate below it reads: 'Both routes are correct. Please use the current name.'",
+      "The road has not moved. Only its explanation has changed."
+    ],
+    "prompt": "When the label changes, what are you willing to follow?",
+    "a": "My remembered route, even if the town denies its name.",
+    "b": "The road I can choose now, rather than either label.",
+    "opA": "Follow remembered space",
+    "opB": "Choose the present route",
+    "resA": "You record the earlier name. Your memory becomes one witness among others, with its own right to be questioned.",
+    "resB": "You keep both names and refuse their instruction. The direction you take will be a fact of your action."
+  },
+  {
+    "id": "DepartureTicket",
+    "label": "Departure ticket",
+    "site": "TRV_EvidenceSpot_08",
+    "title": "Ticket / No destination",
+    "lines": [
+      "The ticket is punched for tomorrow. Its destination field is blank. The passenger line contains your name.",
+      "Fine print: 'Passage does not certify the reality of the destination.' The return half has already been torn away.",
+      "A way out can be real without proving that what lies outside is more real."
+    ],
+    "prompt": "Would you leave without a guarantee about the outside?",
+    "a": "Yes. A choice can be mine without a promised answer.",
+    "b": "No. Uncertainty does not make this place disposable.",
+    "opA": "Departure without certainty",
+    "opB": "Remaining has value",
+    "resA": "You keep the ticket as a permission, not a promise. Whatever waits outside will not retroactively make the choice for you.",
+    "resB": "You record a reason to remain. Refusing the exit can be an act, rather than a failure to escape."
+  },
+  {
+    "id": "FreshFootprints",
+    "label": "Fresh footprints",
+    "site": "TRV_EvidenceSpot_09",
+    "title": "Footprints / A step not yet taken",
+    "lines": [
+      "Two sets of footprints cross the dust. One matches your boots. The other stops exactly one step ahead of you.",
+      "A chalk note reads: 'The next step has already been filed.' There is room beside it for a different footprint.",
+      "If the town predicts the route, does walking it make you obedient? What would stepping aside actually prove?"
+    ],
+    "prompt": "Which action would you call your own?",
+    "a": "Walk the predicted step because I choose it.",
+    "b": "Step aside, even if the town records that too.",
+    "opA": "Consent can be an action",
+    "opB": "Refuse the predicted step",
+    "resA": "You do not confuse agreement with an absence of choice. The question is who is deciding, not whether the result was expected.",
+    "resB": "You keep the prediction as something you answered. A different footprint challenges the script without proving who wrote it."
+  },
+  {
+    "id": "WornKey",
+    "label": "Worn key",
+    "site": "TRV_Float_EastLookout_07",
+    "title": "Worn key / A door remembered",
+    "lines": [
+      "A worn key lies where an earlier marker promised 'proof'. It fits a small lock drawn on the wall, not an actual door.",
+      "Your fingers turn it before you remember why. The key's teeth have been filed down until almost any lock might accept it.",
+      "An object can feel personal because it belongs to you, or because somebody taught you how to hold it."
+    ],
+    "prompt": "What do you keep from an object that cannot certify its owner?",
+    "a": "The habit in my hand is a memory worth keeping.",
+    "b": "The key is a possibility, not an identity document.",
+    "opA": "Embodied memory matters",
+    "opB": "Possibility over ownership",
+    "resA": "You record the gesture as a memory, without asking the key to settle who you are.",
+    "resB": "You keep what the key permits you to imagine. You need not prove ownership before deciding what to do with it."
+  }
+]

@@ -1,0 +1,499 @@
+/**
+ * The decompiler's job is to produce code that says what the graph does. These tests are written
+ * against the two things that actually go wrong: control flow rendered as a flat list (which is
+ * what every naive version does), and arguments silently disappearing.
+ */
+
+import { test } from "node:test";
+import assert from "node:assert/strict";
+
+import { decompileGraph, DSL_GRAMMAR } from "../dist/graphDsl.js";
+
+const link = (node, pin) => ({ node, pin });
+
+/** BeginPlay -> Branch(bIsOpen) -> then: PrintString "open" / else: PrintString "shut" */
+function branchingGraph() {
+  return {
+    graphName: "EventGraph",
+    nodes: [
+      {
+        id: "n_event",
+        type: "K2Node_Event",
+        title: "Event BeginPlay",
+        connectedPins: [{ pin: "then", direction: "out", linkedTo: [link("n_branch", "execute")] }],
+      },
+      {
+        id: "n_get",
+        type: "K2Node_VariableGet",
+        title: "Get bIsOpen",
+        connectedPins: [{ pin: "bIsOpen", direction: "out", linkedTo: [link("n_branch", "Condition")] }],
+      },
+      {
+        id: "n_branch",
+        type: "K2Node_IfThenElse",
+        title: "Branch",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [link("n_event", "then")] },
+          { pin: "Condition", direction: "in", linkedTo: [link("n_get", "bIsOpen")] },
+          { pin: "then", direction: "out", linkedTo: [link("n_open", "execute")] },
+          { pin: "else", direction: "out", linkedTo: [link("n_shut", "execute")] },
+        ],
+      },
+      {
+        id: "n_open",
+        type: "K2Node_CallFunction",
+        title: "Print String",
+        values: { InString: "open" },
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [link("n_branch", "then")] }],
+      },
+      {
+        id: "n_shut",
+        type: "K2Node_CallFunction",
+        title: "Print String",
+        values: { InString: "shut" },
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [link("n_branch", "else")] }],
+      },
+    ],
+  };
+}
+
+test("a branch is rendered as if/else, not as a flat list", () => {
+  const { code, warnings } = decompileGraph(branchingGraph());
+
+  assert.match(code, /\(event EventBeginPlay/, "the title's spaces are removed so the name round-trips");
+  assert.match(code, /\(if bIsOpen/, "the condition is the variable, read through its wire");
+  assert.match(code, /\(else/);
+  // The two prints must be on opposite sides of the else, not one after the other.
+  const thenIdx = code.indexOf('"open"');
+  const elseIdx = code.indexOf("(else");
+  const shutIdx = code.indexOf('"shut"');
+  assert.ok(thenIdx > 0 && elseIdx > thenIdx && shutIdx > elseIdx, `wrong ordering:\n${code}`);
+  assert.deepEqual(warnings, []);
+});
+
+test("literals survive, with the pin that carries them", () => {
+  const { code } = decompileGraph(branchingGraph());
+  assert.match(code, /\(call PrintString :InString "open"\)/);
+});
+
+test("a boolean literal is not quoted and a string one is", () => {
+  const g = {
+    nodes: [
+      {
+        id: "e",
+        type: "K2Node_Event",
+        title: "BeginPlay",
+        connectedPins: [{ pin: "then", direction: "out", linkedTo: [link("c", "execute")] }],
+      },
+      {
+        id: "c",
+        type: "K2Node_CallFunction",
+        title: "Set Hidden",
+        values: { bNewHidden: "true", Count: "3", Reason: "hello" },
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [link("e", "then")] }],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /:bNewHidden true/, "a boolean is a bare token");
+  assert.match(code, /:Reason "hello"/, "text is quoted");
+  assert.match(code, /:Count 3/, "a number is a bare token");
+});
+
+test("a reroute knot is stepped over, not reported as a step", () => {
+  const g = {
+    nodes: [
+      {
+        id: "e",
+        type: "K2Node_Event",
+        title: "BeginPlay",
+        connectedPins: [{ pin: "then", direction: "out", linkedTo: [link("k", "InputPin")] }],
+      },
+      {
+        id: "k",
+        type: "K2Node_Knot",
+        title: "Reroute Node",
+        connectedPins: [
+          { pin: "InputPin", direction: "in", linkedTo: [link("e", "then")] },
+          { pin: "OutputPin", direction: "out", linkedTo: [link("c", "execute")] },
+        ],
+      },
+      {
+        id: "c",
+        type: "K2Node_CallFunction",
+        title: "Print String",
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [link("k", "OutputPin")] }],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /PrintString/);
+  assert.doesNotMatch(code, /Reroute/, "a wire is not a step");
+});
+
+test("a pure node is inlined into the argument that uses it", () => {
+  const g = {
+    nodes: [
+      {
+        id: "e",
+        type: "K2Node_Event",
+        title: "BeginPlay",
+        connectedPins: [{ pin: "then", direction: "out", linkedTo: [link("p", "execute")] }],
+      },
+      {
+        id: "pure",
+        type: "K2Node_CallFunction",
+        title: "Get Actor Location",
+        connectedPins: [{ pin: "ReturnValue", direction: "out", linkedTo: [link("p", "NewLocation")] }],
+      },
+      {
+        id: "p",
+        type: "K2Node_CallFunction",
+        title: "Set Actor Location",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [link("e", "then")] },
+          { pin: "NewLocation", direction: "in", linkedTo: [link("pure", "ReturnValue")] },
+        ],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /:NewLocation \(GetActorLocation\)/, `pure node should be inlined:\n${code}`);
+});
+
+test("a cast renders its outcomes as named continuations", () => {
+  const g = {
+    nodes: [
+      {
+        id: "e",
+        type: "K2Node_Event",
+        title: "BeginPlay",
+        connectedPins: [{ pin: "then", direction: "out", linkedTo: [link("cast", "execute")] }],
+      },
+      {
+        id: "cast",
+        type: "K2Node_DynamicCast",
+        title: "Cast To BP_Door",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [link("e", "then")] },
+          { pin: "then", direction: "out", linkedTo: [link("ok", "execute")] },
+          { pin: "CastFailed", direction: "out", linkedTo: [link("bad", "execute")] },
+        ],
+      },
+      {
+        id: "ok",
+        type: "K2Node_CallFunction",
+        title: "Print String",
+        values: { InString: "door" },
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [link("cast", "then")] }],
+      },
+      {
+        id: "bad",
+        type: "K2Node_CallFunction",
+        title: "Print String",
+        values: { InString: "not a door" },
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [link("cast", "CastFailed")] }],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /\(cast BP_Door/, "the cast names its target class, not its editor label");
+  assert.match(code, /\(:then/);
+  assert.match(code, /\(:CastFailed/);
+  assert.ok(code.indexOf('"door"') < code.indexOf("(:CastFailed"), "each branch under its own continuation");
+});
+
+test("a cycle stops instead of hanging", () => {
+  const g = {
+    nodes: [
+      {
+        id: "e",
+        type: "K2Node_Event",
+        title: "Tick",
+        connectedPins: [{ pin: "then", direction: "out", linkedTo: [link("a", "execute")] }],
+      },
+      {
+        id: "a",
+        type: "K2Node_CallFunction",
+        title: "A",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [link("e", "then")] },
+          { pin: "then", direction: "out", linkedTo: [link("b", "execute")] },
+        ],
+      },
+      {
+        id: "b",
+        type: "K2Node_CallFunction",
+        title: "B",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [link("a", "then")] },
+          { pin: "then", direction: "out", linkedTo: [link("a", "execute")] },
+        ],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /loops back/);
+});
+
+test("missing literals are reported, not silently dropped", () => {
+  const g = branchingGraph();
+  // Strip every literal, as an older plugin without includeDefaults would return.
+  for (const n of g.nodes) delete n.values;
+
+  const { warnings, code } = decompileGraph(g);
+  assert.ok(
+    warnings.some((w) => /withPinValues/.test(w)),
+    "the caller must be told the arguments are missing"
+  );
+  assert.match(code, /\(if bIsOpen/, "structure is still correct without literals");
+});
+
+test("orphaned nodes are counted rather than ignored", () => {
+  const g = branchingGraph();
+  g.nodes.push({ id: "lonely", type: "K2Node_CallFunction", title: "Unused", connectedPins: [] });
+  const { orphaned } = decompileGraph(g);
+  assert.equal(orphaned, 1);
+});
+
+test("a graph with no entry point says so", () => {
+  const g = { nodes: [{ id: "x", type: "K2Node_VariableGet", title: "V", connectedPins: [] }] };
+  const { warnings } = decompileGraph(g);
+  assert.ok(warnings.some((w) => /no entry point/.test(w)));
+});
+
+test("an empty graph is empty, not an error", () => {
+  const r = decompileGraph({ nodes: [] });
+  assert.equal(r.code, "");
+  assert.deepEqual(r.warnings, []);
+  assert.equal(r.orphaned, 0);
+});
+
+test("the DSL is dramatically cheaper than the structure it came from", () => {
+  const g = branchingGraph();
+  const structure = JSON.stringify(g).length;
+  const { code } = decompileGraph(g);
+  assert.ok(
+    code.length < structure * 0.5,
+    `DSL ${code.length} chars vs structure ${structure} - the whole point is that it is smaller`
+  );
+});
+
+test("the grammar documents every form the reader can emit", () => {
+  for (const form of ["(event", "(fn", "(call", "(set", "(cast", "(macro", "(bind", "(if", "(else", "(:"]) {
+    assert.ok(DSL_GRAMMAR.includes(form), `grammar is missing ${form}`);
+  }
+});
+
+/**
+ * Regressions from the adversarial review. Every one of these was reproduced by executing the
+ * shipped build before it was fixed, and every one produced a WRONG result silently rather than an
+ * error - which is why the existing tests all passed while the feature was broken on real graphs.
+ */
+
+test("variable titles are unwrapped: the engine sends \"Get x\" and \"SET x\", never a bare name", () => {
+  const l = (n, p) => ({ node: n, pin: p });
+  const g = {
+    nodes: [
+      { id: "e", type: "K2Node_Event", title: "Event BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [l("s", "execute")] }] },
+      { id: "v", type: "K2Node_VariableGet", title: "Get Health", connectedPins: [{ pin: "Health", direction: "out", linkedTo: [l("s", "Health")] }] },
+      {
+        id: "s",
+        type: "K2Node_VariableSet",
+        title: "SET bIsDead",
+        values: { bIsDead: "true" },
+        connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("e", "then")] }],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /\(set bIsDead true\)/, "the SET prefix must not become part of the name");
+  assert.doesNotMatch(code, /SETbIsDead/);
+  assert.doesNotMatch(code, /GetHealth/, "nor the Get prefix");
+});
+
+test('"Set with Notify" is unwrapped too', () => {
+  const g = {
+    nodes: [
+      { id: "e", type: "K2Node_Event", title: "BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [{ node: "s", pin: "execute" }] }] },
+      { id: "s", type: "K2Node_VariableSet", title: "Set with Notify bHasKey", values: { bHasKey: "true" }, connectedPins: [{ pin: "execute", direction: "in", linkedTo: [{ node: "e", pin: "then" }] }] },
+    ],
+  };
+  assert.match(decompileGraph(g).code, /\(set bHasKey true\)/);
+});
+
+test("the self pin is an argument, not noise", () => {
+  // Dropping it rendered a call on ANOTHER actor identically to the same call on this one.
+  const l = (n, p) => ({ node: n, pin: p });
+  const g = {
+    nodes: [
+      { id: "e", type: "K2Node_Event", title: "BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [l("c", "execute")] }] },
+      { id: "t", type: "K2Node_VariableGet", title: "Get OtherActor", connectedPins: [{ pin: "OtherActor", direction: "out", linkedTo: [l("c", "self")] }] },
+      {
+        id: "c",
+        type: "K2Node_CallFunction",
+        title: "Set Actor Hidden In Game",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [l("e", "then")] },
+          { pin: "self", direction: "in", linkedTo: [l("t", "OtherActor")] },
+        ],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /:self OtherActor/, "which actor the call runs on is the point of the call");
+});
+
+test("bind names do not collide when a node is reached from two branches", () => {
+  // Map.set on an existing id does not grow the map, so naming binds from its size reissued
+  // numbers: a diamond produced two different nodes both called v3 and the writer's last-wins
+  // bind map silently wired a value from the wrong one.
+  const l = (n, p) => ({ node: n, pin: p });
+  const g = {
+    nodes: [
+      { id: "e", type: "K2Node_Event", title: "BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [l("br", "execute")] }] },
+      {
+        id: "br",
+        type: "K2Node_IfThenElse",
+        title: "Branch",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [l("e", "then")] },
+          { pin: "then", direction: "out", linkedTo: [l("a", "execute")] },
+          { pin: "else", direction: "out", linkedTo: [l("a", "execute")] },
+        ],
+      },
+      {
+        id: "a",
+        type: "K2Node_CallFunction",
+        title: "Get A",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [l("br", "then")] },
+          { pin: "then", direction: "out", linkedTo: [l("u", "execute")] },
+          { pin: "ReturnValue", direction: "out", linkedTo: [l("u", "Value")] },
+        ],
+      },
+      {
+        id: "u",
+        type: "K2Node_CallFunction",
+        title: "Use It",
+        connectedPins: [
+          { pin: "execute", direction: "in", linkedTo: [l("a", "then")] },
+          { pin: "Value", direction: "in", linkedTo: [l("a", "ReturnValue")] },
+        ],
+      },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  const names = [...code.matchAll(/\(bind (v\d+)/g)].map((m) => m[1]);
+  assert.equal(new Set(names).size, names.length, `bind names repeat: ${names.join(", ")}\n${code}`);
+});
+
+test("a Timeline's exec inputs are followed, not dropped", () => {
+  // A Timeline's inputs are Play/Stop/Reverse, none of which the bare exec regex matches, so the
+  // whole chain past one vanished. execFlow exports isExecInput for exactly this.
+  const l = (n, p) => ({ node: n, pin: p });
+  const g = {
+    nodes: [
+      { id: "e", type: "K2Node_Event", title: "BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [l("t", "Play")] }] },
+      {
+        id: "t",
+        type: "K2Node_Timeline",
+        title: "DoorSwing",
+        connectedPins: [
+          { pin: "Play", direction: "in", linkedTo: [l("e", "then")] },
+          { pin: "Finished", direction: "out", linkedTo: [l("p", "execute")] },
+        ],
+      },
+      { id: "p", type: "K2Node_CallFunction", title: "Print String", values: { InString: "done" }, connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("t", "Finished")] }] },
+    ],
+  };
+  const { code, orphaned } = decompileGraph(g);
+  assert.match(code, /DoorSwing/, "the Timeline itself must appear");
+  assert.match(code, /"done"/, "and so must everything downstream of it");
+  assert.equal(orphaned, 0);
+});
+
+test("the grammar's own examples parse", async () => {
+  // A syntax reference served verbatim to callers has to be syntax.
+  const { compileDsl } = await import("../dist/graphDslCompile.js");
+  const castExample = DSL_GRAMMAR.match(/\(cast BP_Door[\s\S]*?not a door"\)\)\)/);
+  assert.ok(castExample, "the grammar no longer contains the cast example this checks");
+  compileDsl(`(event BeginPlay ${castExample[0]})`);
+});
+
+test("one exec pin driving two chains emits text the compiler accepts", async () => {
+  // Written as siblings this produced `(if ...)` followed by another statement, which the compiler
+  // rejects as unreachable - the reader emitting text its own writer refuses.
+  const { compileDsl } = await import("../dist/graphDslCompile.js");
+  const l = (n, p) => ({ node: n, pin: p });
+  const g = {
+    nodes: [
+      { id: "e", type: "K2Node_Event", title: "Event BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [l("br", "execute"), l("p2", "execute")] }] },
+      { id: "v", type: "K2Node_VariableGet", title: "Get bFlag", connectedPins: [{ pin: "bFlag", direction: "out", linkedTo: [l("br", "Condition")] }] },
+      { id: "br", type: "K2Node_IfThenElse", title: "Branch", connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("e", "then")] }, { pin: "Condition", direction: "in", linkedTo: [l("v", "bFlag")] }, { pin: "then", direction: "out", linkedTo: [l("p1", "execute")] }] },
+      { id: "p1", type: "K2Node_CallFunction", title: "Print String", values: { InString: "a" }, connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("br", "then")] }] },
+      { id: "p2", type: "K2Node_CallFunction", title: "Print String", values: { InString: "b" }, connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("e", "then")] }] },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /\(seq/);
+
+  const built = compileDsl(code);
+  const event = built.nodes.find((n) => n.nodeType === "Event").ref;
+  const off = built.connections.filter((c) => c.from === `${event}.then`).map((c) => c.to);
+  assert.equal(off.length, 2, `both chains must hang off the same pin, got ${JSON.stringify(off)}`);
+});
+
+test("an entry with two exec outputs names them instead of concatenating", () => {
+  // For an input action with Pressed and Released, concatenating is a different program.
+  const l = (n, p) => ({ node: n, pin: p });
+  const g = {
+    nodes: [
+      {
+        id: "e",
+        type: "K2Node_InputAction",
+        title: "InputAction Fire",
+        connectedPins: [
+          { pin: "Pressed", direction: "out", linkedTo: [l("a", "execute")] },
+          { pin: "Released", direction: "out", linkedTo: [l("b", "execute")] },
+        ],
+      },
+      { id: "a", type: "K2Node_CallFunction", title: "Start Fire", connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("e", "Pressed")] }] },
+      { id: "b", type: "K2Node_CallFunction", title: "Stop Fire", connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("e", "Released")] }] },
+    ],
+  };
+  const { code } = decompileGraph(g);
+  assert.match(code, /\(:Pressed/);
+  assert.match(code, /\(:Released/);
+  assert.ok(code.indexOf("StartFire") < code.indexOf("(:Released"), "each body under its own output");
+});
+
+test("expression expansion is budgeted, so a shared pure chain cannot run away", () => {
+  // Only walk() charged the budget, so pure nodes re-expanded per consumer without limit.
+  const l = (n, p) => ({ node: n, pin: p });
+  const nodes = [
+    { id: "e", type: "K2Node_Event", title: "BeginPlay", connectedPins: [{ pin: "then", direction: "out", linkedTo: [l("c", "execute")] }] },
+  ];
+  // A chain of pure nodes, each feeding the next twice - exponential if unbounded.
+  const DEPTH = 24;
+  for (let i = 0; i < DEPTH; i++) {
+    nodes.push({
+      id: `n${i}`,
+      type: "K2Node_CallFunction",
+      title: `Add ${i}`,
+      connectedPins: [
+        { pin: "A", direction: "in", linkedTo: [l(i === 0 ? "leaf" : `n${i - 1}`, "ReturnValue")] },
+        { pin: "B", direction: "in", linkedTo: [l(i === 0 ? "leaf" : `n${i - 1}`, "ReturnValue")] },
+        { pin: "ReturnValue", direction: "out", linkedTo: [l(i === DEPTH - 1 ? "c" : `n${i + 1}`, "A")] },
+      ],
+    });
+  }
+  nodes.push({ id: "leaf", type: "K2Node_VariableGet", title: "Get X", connectedPins: [{ pin: "X", direction: "out", linkedTo: [l("n0", "A")] }] });
+  nodes.push({ id: "c", type: "K2Node_CallFunction", title: "Use", connectedPins: [{ pin: "execute", direction: "in", linkedTo: [l("e", "then")] }, { pin: "A", direction: "in", linkedTo: [l(`n${DEPTH - 1}`, "ReturnValue")] }] });
+
+  const started = Date.now();
+  const { code, warnings } = decompileGraph({ nodes }, { maxSteps: 200 });
+  assert.ok(Date.now() - started < 5_000, "an unbudgeted expansion would not finish");
+  assert.ok(code.length < 200_000, `output ran away: ${code.length} chars`);
+  assert.ok(warnings.some((w) => /budget/.test(w)), "and it must say it truncated");
+});

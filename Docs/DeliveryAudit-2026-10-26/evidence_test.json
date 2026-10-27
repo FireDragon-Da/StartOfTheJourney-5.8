@@ -1,0 +1,27 @@
+[
+  {
+    "id": "PhotoAfterDeath",
+    "count": 1,
+    "ids": [
+      "PhotoAfterDeath"
+    ],
+    "complete": false
+  },
+  {
+    "id": "PhotoAfterDeath",
+    "count": 1,
+    "ids": [
+      "PhotoAfterDeath"
+    ],
+    "complete": false
+  },
+  {
+    "id": "WitnessRecording",
+    "count": 2,
+    "ids": [
+      "PhotoAfterDeath",
+      "WitnessRecording"
+    ],
+    "complete": true
+  }
+]
