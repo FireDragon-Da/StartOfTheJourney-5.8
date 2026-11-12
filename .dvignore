@@ -191,6 +191,7 @@ WritePermissions.*.temp
 
 # Third-party MCP servers checked out under Tools/
 Tools/**/node_modules/
+Tools/ziggymar-unreal-mcp/mcp-server/dist/
 Tools/**/.venv/
 Tools/**/__pycache__/
 
